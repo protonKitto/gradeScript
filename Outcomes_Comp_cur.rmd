@@ -1,0 +1,42 @@
+---
+title: "Compute Canvas Outcomes"
+author: "Dr K"
+date: "Year 2019"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+---
+
+```{r include=FALSE,echo=FALSE}
+require(tidyverse)
+require(tigerstats)
+Outcom <- read.csv(file = "Outcomes-2019-73452-MATH115.csv")
+#names(alldata)
+```
+
+# Use dplyr to cut up the data and replace NA's with zero
+
+```{r}
+#canvas puts summary crap in download that ends in .Points and .Score so it gets removed with select(-ends_with) 
+Outcom <- select(Outcom,Student.name,contains("result")) %>% select(-ends_with(".Points"))%>% select(-ends_with(".Score"))
+Outcom[is.na(Outcom)] <- 0
+```
+##  score2 is highest of all except final 
+
+
+```{r}
+Outcomm1 <- select(Outcom,-Student.name)
+nrw = nrow(Outcomm1)
+for (i in 1:nrw){
+Outcom$score[i]=max(Outcomm1[i,])
+}
+Outcomm2 <- select(Outcom,-Student.name,-Final.result)
+for (i in 1:nrw){
+Outcom$score2[i]=max(Outcomm2[i,])
+}
+Out <- select(Outcom,Student.name,Final.result,score2)
+print(Out)
+```
+
+

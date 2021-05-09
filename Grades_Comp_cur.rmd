@@ -1,0 +1,117 @@
+---
+title: "Compute Canvas Grades"
+author: "Dr K"
+date: "Year 2021"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+---
+
+```{r include=FALSE,echo=FALSE}
+require(tidyverse)
+require(tigerstats)
+alldata <- read.csv(file = "CRN32362.csv")
+#alldata <- read.csv(file = "CRN73452.csv", sep=';')
+#alldata = read.csv(file='2020MATH115.csv', sep=';')
+#names(alldata)
+```
+
+# Use dplyr to cut up the data
+
+```{r}
+#canvas puts summary crap in download that ends in .Points and .Score so it gets removed with select(-ends_with) 
+Dcamp <- select(alldata,Student,contains("Data")) %>% select(-ends_with(".Points"))%>% select(-ends_with(".Score")) %>% select(-contains("Swirl"))
+```
+
+
+
+```{r }
+#canvas has row 1 as points possible so you need to pick the second highest point to get the highest student score
+require(purrr)
+#summary(Dcamp)
+Dcamp[is.na(Dcamp)] <- 0
+#now sum rows
+Dcamp$Dcamp_sum <-Dcamp[,2] 
+#(Dcamp)
+Dcamp$DcampNorm <- Dcamp$Dcamp_sum/sort(Dcamp$Dcamp_sum,decreasing = TRUE)[[2]]
+``` 
+```{r eval=FALSE}
+Swirl <- select(alldata,Student,contains("Swirl.")) %>% select(-ends_with(".Points"))%>% select(-ends_with(".Score"))
+Swirl[is.na(Swirl)] <- 0
+Swirl$Swirl_sum <-rowSums(Swirl[,2:ncol(Swirl)]) 
+Swirl$SwirlNorm <- Swirl$Swirl_sum/sort(Swirl$Swirl_sum,decreasing = TRUE)[[2]]
+#(sort(Hwork$Hwork_sum,decreasing = TRUE)[2])
+```
+
+
+
+```{r eval=FALSE}
+Hwork <- select(alldata,Student,contains("Homework.")) %>% select(-ends_with(".Points"))%>% select(-ends_with(".Score"))
+Hwork[is.na(Hwork)] <- 0
+Hwork$Hwork_sum <-rowSums(Hwork[,2:ncol(Hwork)]) 
+Hwork$HworkNorm <- Hwork$Hwork_sum/sort(Hwork$Hwork_sum,decreasing = TRUE)[[2]]
+#(sort(Hwork$Hwork_sum,decreasing = TRUE)[2])
+```
+
+```{r}
+Quiz <- select(alldata,Student,contains("Quiz"))  %>% select(-ends_with(".Points"))%>% select(-ends_with(".Score"))
+Quiz[is.na(Quiz)] <- 0
+Quiz$Quiz_sum <-rowSums(Quiz[,2:ncol(Quiz)]) 
+Quiz$QuizNorm <- Quiz$Quiz_sum/sort(Quiz$Quiz_sum,decreasing = TRUE)[[2]]
+#(sort(Quiz$Quiz_sum,decreasing = TRUE)[2])
+```
+
+```{r}
+Gitdat <- select(alldata,Student,contains("Git"))%>% select(-ends_with(".Points"))%>% select(-ends_with(".Score"))%>% select(-contains("DataCamp"))
+Gitdat[is.na(Gitdat)] <- 0
+Gitdat$Git_sum <-rowSums(Gitdat[,2:ncol(Gitdat)]) 
+Gitdat$GitNorm <- Gitdat$Git_sum/sort(Gitdat$Git_sum,decreasing = TRUE)[[2]]
+```
+```{r}
+writeup <- select(alldata,Student,contains("WriteUp"),contains("WUP"))%>% select(-ends_with(".Points"))%>% select(-ends_with(".Score"))
+writeup[is.na(writeup)] <- 0
+writeup$Writeup_sum <-rowSums(writeup[,2:ncol(writeup)])
+writeup$WriteupNorm <- writeup$Writeup_sum/sort(writeup$Writeup_sum,decreasing = TRUE)[[2]]
+```
+
+```{r}
+Final <- select(alldata,Student,starts_with("fin"))%>%select(-ends_with(".Points"))%>% select(-ends_with(".Score"))
+Final[is.na(Final)] <- 0
+
+
+Final$FinalNorm <- Final[,2]/sort(Final[,2],decreasing = TRUE)[[2]]
+```
+
+  
+######################################################
+
+#Now create a dataframe with just the normed data
+
+```{r}
+one <- select(Dcamp,Student,DcampNorm)
+two <- select(Hwork,HworkNorm)
+twoHalf <- select(Quiz,QuizNorm)
+three <- select(Gitdat,GitNorm)
+threehalf <- select(Swirl,SwirlNorm)
+four <- select(writeup,WriteupNorm)
+five <- select(Final,FinalNorm)
+#rollup <- cbind(one,two,twoHalf,three,four,five)
+rollup <- cbind(one,two, twoHalf,three,threehalf,four, five)
+```
+
+
+```{r}
+#rollup$grade <-  rollup$QuizNorm*10 + rollup$DcampNorm*10 + rollup$WriteupNorm*50 + rollup$GitNorm*10 + rollup$FinalNorm*20
+rollup$grade2 <-  rollup$DcampNorm*5 + rollup$WriteupNorm*60 + rollup$GitNorm*5 + rollup$FinalNorm*20 +rollup$SwirlNorm*5 + rollup$QuizNorm + rollup$HworkNorm
+#rollup$grade = rollup$WriteupNorm*50 + rollup$FinalNorm*20 + rollup$DcampNorm*10 + rollup$GitNorm*10 + rollup$QuizNorm*10 
+
+print(rollup)[,c(1,7)]
+FinalGrade <- rollup %>% arrange(desc(rollup$grade))
+print(FinalGrade[c(1,7)])
+hist(rollup[,8])
+write.csv(rollup,file="PMGrades_CRN73452.csv",sep=",")
+```
+  
+
+
