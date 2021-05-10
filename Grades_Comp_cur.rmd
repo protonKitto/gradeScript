@@ -87,7 +87,6 @@ Final$FinalNorm <- Final[,2]/sort(Final[,2],decreasing = TRUE)[[2]]
 ```
 
   
-######################################################
 
 #Now create a dataframe with just the normed data
 
@@ -96,13 +95,7 @@ Git <- select(Gitdat,Student,GitNorm)
 WUP <- select(writeup,WriteupNorm)
 Fin <- select(Final,FinalNorm)
 rollup <- cbind(Git,OYO, WUP,Fin)
-
 ```
-
-
-
-
-
 
 ```{r}
 #Allocate grade components in accordance with syllabus
