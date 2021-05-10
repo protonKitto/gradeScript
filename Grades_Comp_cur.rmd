@@ -36,7 +36,7 @@ Dcamp$Dcamp_sum <-Dcamp[,2]
 #(Dcamp)
 Dcamp$DcampNorm <- Dcamp$Dcamp_sum/sort(Dcamp$Dcamp_sum,decreasing = TRUE)[[2]]
 ``` 
-```{r eval=FALSE}
+```{r }
 Swirl <- select(alldata,Student,contains("Swirl.")) %>% select(-ends_with(".Points"))%>% select(-ends_with(".Score"))
 Swirl[is.na(Swirl)] <- 0
 Swirl$Swirl_sum <-rowSums(Swirl[,2:ncol(Swirl)]) 
@@ -46,7 +46,7 @@ Swirl$SwirlNorm <- Swirl$Swirl_sum/sort(Swirl$Swirl_sum,decreasing = TRUE)[[2]]
 
 
 
-```{r eval=FALSE}
+```{r }
 Hwork <- select(alldata,Student,contains("Homework.")) %>% select(-ends_with(".Points"))%>% select(-ends_with(".Score"))
 Hwork[is.na(Hwork)] <- 0
 Hwork$Hwork_sum <-rowSums(Hwork[,2:ncol(Hwork)]) 
@@ -60,6 +60,9 @@ Quiz[is.na(Quiz)] <- 0
 Quiz$Quiz_sum <-rowSums(Quiz[,2:ncol(Quiz)]) 
 Quiz$QuizNorm <- Quiz$Quiz_sum/sort(Quiz$Quiz_sum,decreasing = TRUE)[[2]]
 #(sort(Quiz$Quiz_sum,decreasing = TRUE)[2])
+```
+```{r}
+OYO <- (Quiz$QuizNorm + Swirl$SwirlNorm + Hwork$HworkNorm + Dcamp$DcampNorm)/4
 ```
 
 ```{r}
@@ -89,6 +92,17 @@ Final$FinalNorm <- Final[,2]/sort(Final[,2],decreasing = TRUE)[[2]]
 #Now create a dataframe with just the normed data
 
 ```{r}
+Git <- select(Gitdat,Student,GitNorm)
+WUP <- select(writeup,WriteupNorm)
+Fin <- select(Final,FinalNorm)
+rollup <- cbind(Git,OYO, WUP,Fin)
+
+```
+
+
+
+
+```{r eval=FALSE}
 one <- select(Dcamp,Student,DcampNorm)
 two <- select(Hwork,HworkNorm)
 twoHalf <- select(Quiz,QuizNorm)
@@ -103,15 +117,16 @@ rollup <- cbind(one,two, twoHalf,three,threehalf,four, five)
 
 ```{r}
 #rollup$grade <-  rollup$QuizNorm*10 + rollup$DcampNorm*10 + rollup$WriteupNorm*50 + rollup$GitNorm*10 + rollup$FinalNorm*20
-rollup$grade2 <-  rollup$DcampNorm*5 + rollup$WriteupNorm*60 + rollup$GitNorm*5 + rollup$FinalNorm*20 +rollup$SwirlNorm*5 + rollup$QuizNorm + rollup$HworkNorm
+rollup$grade2 <-  rollup$OYO*25 + rollup$WriteupNorm*60 + rollup$GitNorm*5 + rollup$FinalNorm*20 
 #rollup$grade = rollup$WriteupNorm*50 + rollup$FinalNorm*20 + rollup$DcampNorm*10 + rollup$GitNorm*10 + rollup$QuizNorm*10 
 
-print(rollup)[,c(1,7)]
-FinalGrade <- rollup %>% arrange(desc(rollup$grade))
-print(FinalGrade[c(1,7)])
-hist(rollup[,8])
-write.csv(rollup,file="PMGrades_CRN73452.csv",sep=",")
+
+FinalGrade <- rollup %>% arrange(desc(rollup$grade2))
+#print(FinalGrade)
+print(FinalGrade[c(1,6)])
+write.csv(rollup,file="PMGrades_CRN32362.csv",sep=",")
 ```
+
   
 
 
