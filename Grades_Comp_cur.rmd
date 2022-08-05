@@ -1,7 +1,7 @@
 ---
 title: "Compute Canvas Grades"
 author: "Dr K"
-date: "Year 2021"
+date: "Year 2022"
 output:
   html_document:
     df_print: paged
@@ -11,10 +11,8 @@ output:
 ```{r include=FALSE,echo=FALSE}
 require(tidyverse)
 require(tigerstats)
-alldata <- read.csv(file = "CRN32362.csv")
-#alldata <- read.csv(file = "CRN73452.csv", sep=';')
-#alldata = read.csv(file='2020MATH115.csv', sep=';')
-#names(alldata)
+alldata <- read.csv(file = "CRN53098V2MATH116.csv")
+
 ```
 
 # Use dplyr to cut up the data
@@ -35,7 +33,9 @@ Dcamp[is.na(Dcamp)] <- 0
 Dcamp$Dcamp_sum <-Dcamp[,2] 
 #(Dcamp)
 Dcamp$DcampNorm <- Dcamp$Dcamp_sum/sort(Dcamp$Dcamp_sum,decreasing = TRUE)[[2]]
-``` 
+```
+
+
 ```{r }
 Swirl <- select(alldata,Student,contains("Swirl.")) %>% select(-ends_with(".Points"))%>% select(-ends_with(".Score"))
 Swirl[is.na(Swirl)] <- 0
@@ -61,6 +61,18 @@ Quiz$Quiz_sum <-rowSums(Quiz[,2:ncol(Quiz)])
 Quiz$QuizNorm <- Quiz$Quiz_sum/sort(Quiz$Quiz_sum,decreasing = TRUE)[[2]]
 #(sort(Quiz$Quiz_sum,decreasing = TRUE)[2])
 ```
+
+```{r eval=FALSE}
+SS <- select(alldata,Student,contains("SSone")|contains("SStwo"))  %>% select(-ends_with(".Points"))%>% select(-ends_with(".Score"))
+SS[is.na(SS)] <- 0
+SS$SS_sum <-rowSums(SS[,2:ncol(SS)]) 
+SS$SSNorm <- SS$SS_sum/sort(SS$SS_sum,decreasing = TRUE)[[2]]
+#(sort(SS$SS_sum,decreasing = TRUE)[2])
+
+```
+
+
+
 ```{r}
 OYO <- (Quiz$QuizNorm + Swirl$SwirlNorm + Hwork$HworkNorm + Dcamp$DcampNorm)/4
 ```
@@ -83,7 +95,7 @@ Final <- select(alldata,Student,starts_with("fin"))%>%select(-ends_with(".Points
 Final[is.na(Final)] <- 0
 
 
-Final$FinalNorm <- Final[,2]/sort(Final[,2],decreasing = TRUE)[[2]]
+Final$FinalNorm <- Final[,2]/max(Final[,2])
 ```
 
   
@@ -94,6 +106,7 @@ Final$FinalNorm <- Final[,2]/sort(Final[,2],decreasing = TRUE)[[2]]
 Git <- select(Gitdat,Student,GitNorm)
 WUP <- select(writeup,WriteupNorm)
 Fin <- select(Final,FinalNorm)
+
 rollup <- cbind(Git,OYO, WUP,Fin)
 ```
 
@@ -103,9 +116,11 @@ rollup$grade2 <-  rollup$OYO*25 + rollup$WriteupNorm*60 + rollup$GitNorm*5 + rol
 FinalGrade <- rollup %>% arrange(desc(rollup$grade2))
 #print(FinalGrade)
 print(FinalGrade[c(1,6)])
-write.csv(rollup,file="PMGrades_CRN32362.csv",sep=",")
+write.csv(rollup,file="Sumr_CRN53098.csv",sep=",")
 ```
 
-  
+```{r, eval=FALSE}
+write.csv(Dcamp,file="Dcamp.csv",sep=",")
+```  
 
 
